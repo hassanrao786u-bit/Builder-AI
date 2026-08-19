@@ -74,11 +74,18 @@
 
                     <button onClick={() => handleSubmit()}
                         disabled= {!value.trim() || loading}
-                        className='inline-flex items-center jusitfy-center bg-zinc-950 text-white hover:bg-zinc-800 disabled:opacity-40 cursor-pointer rounded-full shrink-0'
+                        className='inline-flex items-center justify-center bg-zinc-950 text-white hover:bg-zinc-800 disabled:opacity-40 cursor-pointer rounded-full shrink-0'
                         style={{
                             width: large ? 36 : 24,
                             height: large ? 36 : 24,
                         }}>
+
+
+                             {loading ? (
+                             <Loader2Icon size={14} className='animate-spin' />
+                             ) : (
+                             <ArrowRightIcon size={14} />
+                             )}
 
                     </button>
         

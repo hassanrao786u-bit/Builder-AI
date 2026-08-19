@@ -92,7 +92,7 @@ const HomePage = () => {
           {/* Prompt input */}
           <div className='w-full mt-6'>
             <PromptInput
-              onSubmit={(handleGenerate) => {}}
+              onSubmit={handleGenerate}
               loading={generatingProject}
               placeholder='Create a portfolio website...'
               variant='glass'
@@ -119,7 +119,7 @@ const HomePage = () => {
 
               <div className='flex items-center justify-between pb-3 mb-3 border border-b border-white/10'>
                 <p className='text-xs font-medium uppercase text-zinc-100 tracking-widest'>All projects</p>
-                <span className='text-xs text-zinc-100 font-normal'>
+                <span className='text-xs text-zinc-100 font-sans'>
                   {projects.length} {projects.length === 1 ? "project" : "projects"}
                 </span>
               </div>
