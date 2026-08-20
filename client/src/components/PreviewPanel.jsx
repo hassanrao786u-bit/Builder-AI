@@ -45,16 +45,16 @@ import SandpackErrorMonitor from './SandpackErrorMonitor';
 const PreviewPanel = ({project, activeFile, showCode}) => {
 
     const [showErrorOverlay, setShowErrorOverlay] = useState(true)
+    // Keep local state of files tht updtes as user types
     const [liveFiles, setLiveFiles] = useState(project.files);
     const [prevProjectKey, setPrevProjectKey] = useState(`${project._id}-${project.version}`)
 
-  useEffect(() => {
+
     const currentKey = `${project._id}-${project.version}`;
     if (currentKey !== prevProjectKey) {
         setPrevProjectKey(currentKey);
         setLiveFiles(project.files);
     }
-}, [project._id, project.version]);
 
     const handleLiveFilesChange = (newFiles) => {
         setLiveFiles((prev) => {
