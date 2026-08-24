@@ -92,7 +92,7 @@ const HomePage = () => {
           {/* Prompt input */}
           <div className='w-full mt-6'>
             <PromptInput
-              onSubmit={handleGenerate}
+              onSubmit={(prompt) => handleGenerate(prompt)}
               loading={generatingProject}
               placeholder='Create a portfolio website...'
               variant='glass'

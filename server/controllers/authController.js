@@ -64,6 +64,7 @@ export async function login(req, res){
  const isValid = await user.comparePassword(password)
  if(!isValid) {
     res.status(401).json({error: "Invalid email or password"})
+    return;
  }
 
 
@@ -100,6 +101,7 @@ export async function me(req, res){
     const user = await User.findById(req.user.userId).select("-password");
     if(!user){
         res.status(404).json({error: "User not found"});
+        return;
     }
     res.json({user})
 

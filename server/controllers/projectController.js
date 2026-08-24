@@ -1,4 +1,3 @@
-import { error, timeStamp } from "console";
 import { Project } from "../models/Project.js";
 import crypto from "crypto";
 import { generateProject } from "../services/ai.js";
@@ -14,7 +13,7 @@ function hashContent(content){
 
 // Create a new project from an AI Prompt.
 export async function createProject(req, res){
- const {Prompt} = req.body;
+ const {prompt} = req.body;
  if(!prompt || typeof prompt !== 'string'){
     res.status(400).json({error: "prompt is required"});
     return;
@@ -65,22 +64,22 @@ export async function createProject(req, res){
 }
 
 // Background  worker to progressive generate files and update database in real-time.
-async function runBackgroundGeneration(projectId, Prompt) {
+async function runBackgroundGeneration(projectId, prompt) {
     try {
         console.log(`[Background AI] starting generation for project ${projectId}`);
         const result = await generateProject(prompt, {
-            onplan: async (plan) => {
+            onPlan: async (plan) => {
                 console.log(`[Background AI] plan created for project ${projectId}. planned ${plan.files.length} files.`);
                 const fileList = plan.files.map((f)=> `- \` ${f.path}\` : ${f.description}`).join("\n");
 
-                await project.findByIdAndUpdate(projectId, {
+                await Project.findByIdAndUpdate(projectId, {
                     name: plan.projectName || "Generated Project", 
                     status: "generating",
                     filesPlanned: plan.files,
                     $push: {
                         messages: {
                             role: "assistant",
-                            content: `planned website structure:\n${filesList}`,
+                            content: `planned website structure:\n${fileList}`,
                             timestamp: new Date(),
                         }
                     }
@@ -88,20 +87,20 @@ async function runBackgroundGeneration(projectId, Prompt) {
             },
             onFileStart : async(path) => {
                 console.log(`[Background AI] starting file ${path} for project ${projectId}`);
-                await project.findByIdAndUpdate(projectId, {currentFile: path,})
+                await Project.findByIdAndUpdate(projectId, {currentFile: path,})
             },
             onFileComplete: async(path, code) => {
                 console.log(`[Background AI] Finished file ${path} for project ${projectId}`);
 
-                const project = await project.findById(projectId);
+                const project = await Project.findById(projectId);
 
                 if(project){
                     project.files = project.files || {};
                     project.files[path] = {content: code, hash: hashContent(code)};
                     project.filesGenerated = [...(project.filesGenerated || []), path];
-                    project,messages.push({
+                    project.messages.push({
                         role: "assistant",
-                        content: `Created file "${path}`,
+                        content: `Created file "${path}"`,
                         timestamp: new Date(),
                     });
                     project.currentFile = null;
@@ -146,7 +145,7 @@ async function runBackgroundGeneration(projectId, Prompt) {
 // GET /api/projects
 // List all projects owned by the user (summary only, no file contents).
 export async function listProjects(req, res){
-    if(req.user){
+    if(!req.user){
         res.status(401).json({error: "Unauthorized"});
         return;
     }
@@ -161,7 +160,7 @@ export async function listProjects(req, res){
 // GET /api/projects/:id
 // Get full project details.
 export async function getProject(req, res){
-    if(req.user){
+    if(!req.user){
         res.status(401).json({error: "Unauthorized"});
         return;
     }
@@ -198,7 +197,7 @@ export async function getProject(req, res){
 // DELETE /api/projects/:id
 // Delete a project
 export async function deleteProject(req, res){
-  if(req.user){
+  if(!req.user){
         res.status(401).json({error: "Unauthorized"});
         return;
     }
@@ -245,9 +244,7 @@ export async function updateProjectFiles(req, res){
 
     const filesObj = {};
     for (const [path, entry] of Object.entries(project.files)) {
-        if (typeof content === "string"){
-            filesObj[path] = entry.content;
-        }
+       filesObj[path] = entry.content;
     }
 
     res.json({
@@ -265,7 +262,7 @@ export async function updateProjectFiles(req, res){
 // POST /api/projects/:id/publish
 // Mark a project as publicly published.
 export async function publishProject(req, res){
-    if(req.user){
+    if(!req.user){
         res.status(401).json({error: "Unauthorized"});
         return;
     }
@@ -284,8 +281,8 @@ export async function publishProject(req, res){
     res.json({success: true, published: project.published});
 }
 
-// GET /api/projects/:id
-// Get a publicly publishednproject details (without auth).
+// GET /api/projects/public/:id
+// Get a publicly published project details (without auth).
 export async function getPublicProject(req, res){
    const project = await Project.findById(req.params.id);
    if(!project){
